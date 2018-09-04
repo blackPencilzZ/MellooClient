@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_text_moment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginLeft="100dp"
+        android:layout_marginBottom="20dp"
+        android:text="A"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_picture_moment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:text="B"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_video_moment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="20dp"
+        android:text="C"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/moments_nearby"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/my_moments_link_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="160dp"
+        android:text="C"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/moments_nearby_link_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginBottom="60dp"
+        android:text="C"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/follow_moments_link_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="280dp"
+        android:text="C"/>
+
+</FrameLayout>
