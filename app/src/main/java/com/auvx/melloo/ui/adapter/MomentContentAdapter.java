@@ -1,4 +1,4 @@
-package com.auvx.melloo.ui;
+package com.auvx.melloo.ui.adapter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

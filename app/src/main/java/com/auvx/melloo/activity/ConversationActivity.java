@@ -14,7 +14,7 @@ import com.auvx.melloo.constant.MsgConst;
 import com.auvx.melloo.constant.field.AccountField;
 import com.auvx.melloo.constant.field.AccountFieldValue;
 import com.auvx.melloo.domain.MessagePiece;
-import com.auvx.melloo.ui.MessageListAdapter;
+import com.auvx.melloo.ui.adapter.MessageListAdapter;
 import com.auvx.melloo.util.HttpOperator;
 import com.auvx.melloo.util.JsonOperator;
 import com.auvx.melloo.util.StringInspector;

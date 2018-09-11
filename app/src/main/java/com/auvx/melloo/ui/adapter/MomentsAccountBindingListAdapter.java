@@ -1,4 +1,4 @@
-package com.auvx.melloo.ui;
+package com.auvx.melloo.ui.adapter;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -12,10 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.auvx.melloo.R;
-import com.auvx.melloo.activity.MainActivity;
 import com.auvx.melloo.activity.VisitActivity;
 import com.auvx.melloo.constant.field.AccountField;
-import com.auvx.melloo.context.Melloo;
 import com.auvx.melloo.domain.MomentRecord;
 import com.auvx.melloo.domain.MomentsAccountBinding;
 

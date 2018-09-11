@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import com.auvx.melloo.domain.MessagePiece;
-import com.auvx.melloo.ui.MessageListAdapter;
+import com.auvx.melloo.ui.adapter.MessageListAdapter;
 import com.auvx.melloo.util.JsonOperator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

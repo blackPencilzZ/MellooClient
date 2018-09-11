@@ -39,8 +39,9 @@
 
         <activity android:name=".activity.VisitActivity" />
         <activity android:name=".activity.ConversationActivity" />
-        <activity android:name=".activity.MyMomentsActivity" />
-        <activity android:name=".activity.FollowMomentsActivity"></activity>
+        <activity android:name=".activity.CameraActivity" />
+        <activity android:name=".activity.VideoRecorderActivity" />
+        <activity android:name=".activity.ImageSelectorActivity"></activity>
     </application>
 
 </manifest>

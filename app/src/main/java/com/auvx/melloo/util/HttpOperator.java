@@ -4,17 +4,14 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.auvx.melloo.constant.HttpAttributeName;
-import com.auvx.melloo.constant.LogTag;
 import com.auvx.melloo.constant.MimePattern;
 import com.auvx.melloo.context.Melloo;
 import com.auvx.melloo.exception.DataProcessingException;
 import com.auvx.melloo.exception.NetworkIOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -38,17 +35,19 @@ public class HttpOperator {
             .build();
     //content-type JSON的Request
 
-    private static  RequestBody getRequestBody(MediaType mediaType, String content) {
-       return  RequestBody.create(null, content);
+    private static RequestBody getRequestBody(MediaType mediaType, String content) {
+        return RequestBody.create(null, content);
     }
+
     private static RequestBody getRequestBody(String content) {
         return RequestBody.create(null, content);
     }
 
-    public static Request buildJsonEncodedPostRequest(Map<String, String> inherentHeaders,
-                                                  Map<String, String> extendHeaders,
-                                                  String url,
-                                                  Object load){
+    public static Request buildJsonEncodedPostRequest(String url,
+                                                      Object load,
+                                                      Map<String, String> inherentHeaders,
+                                                      Map<String, String> extendHeaders
+    ) {
         ObjectMapper mapper = JsonOperator.getMapper();
         String bodyContent = null;
         try {
@@ -64,7 +63,7 @@ public class HttpOperator {
                 builder.header(entry.getKey(), entry.getValue());
             }
         }
-        if (extendHeaders != null && !extendHeaders.isEmpty()){
+        if (extendHeaders != null && !extendHeaders.isEmpty()) {
             for (Map.Entry<String, String> entry : extendHeaders.entrySet()) {
                 builder.addHeader(entry.getKey(), entry.getValue());
             }
@@ -74,13 +73,22 @@ public class HttpOperator {
 
     }
 
-    public static Request buildJsonEncodePostRequest(Map<String, String> extendHeaders,
-                                                     String url, Object load) {
-        return buildJsonEncodedPostRequest(null, extendHeaders, url, load);
+    public static Request buildJsonEncodePostRequest(String url,
+                                                     Object load,
+                                                     Map<String, String> extendHeaders
+    ) {
+        return buildJsonEncodedPostRequest(url, load, null, extendHeaders);
     }
 
     public static Request buildJsonEncodePostRequest(String url, Object load) {
-        return buildJsonEncodedPostRequest(null, null, url, load);
+        return buildJsonEncodedPostRequest(url, load, null, null);
+    }
+
+    public static Request buildJsonEncodePostRequest(String url, Map<String, String> extendHeaders) {
+        return buildJsonEncodedPostRequest(url, null, null, extendHeaders);
+    }
+    public static Request buildJsonEncodePostRequest(String url) {
+        return buildJsonEncodedPostRequest(url, null, null, null);
     }
 
     public static Request buildMultipartPostRequest() {
@@ -88,10 +96,10 @@ public class HttpOperator {
     }
 
 
-    public static String sendRequest(Request request){
+    public static String sendRequest(Request request) {
         try {
             Response response = client.newCall(request).execute();
-            if (response.isSuccessful()){
+            if (response.isSuccessful()) {
 
                 String onlineClue = response.header(HttpAttributeName.Extend.ONLINE_CLUE);
                 SharedPreferences appHandbook = Melloo.getSharedPreferences();

@@ -5,11 +5,11 @@ import android.os.Bundle;
 
 import com.auvx.melloo.R;
 
-public class FollowMomentsActivity extends AppCompatActivity {
+public class VideoRecorderActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_follow_moments);
+        setContentView(R.layout.activity_record_video);
     }
 }

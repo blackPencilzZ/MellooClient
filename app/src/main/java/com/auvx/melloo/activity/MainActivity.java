@@ -1,47 +1,44 @@
 package com.auvx.melloo.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.content.ContentUris;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.auvx.melloo.R;
 import com.auvx.melloo.constant.AppLocalDataDir;
-import com.auvx.melloo.constant.HttpAttributeName;
-import com.auvx.melloo.constant.LogTag;
-import com.auvx.melloo.constant.ResourcePath;
-import com.auvx.melloo.domain.MomentRecord;
-import com.auvx.melloo.domain.MomentsAccountBinding;
-import com.auvx.melloo.domain.StandardFeedback;
-import com.auvx.melloo.domain.UserLocation;
-import com.auvx.melloo.exception.DataProcessingException;
-import com.auvx.melloo.ui.MomentsAccountBindingListAdapter;
-import com.auvx.melloo.util.HttpOperator;
-import com.auvx.melloo.util.JsonOperator;
-import com.baidu.location.BDLocation;
+import com.auvx.melloo.fragment.MomentsMineFragment;
+import com.auvx.melloo.fragment.MomentsNearbyFragment;
 import com.baidu.location.LocationClient;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import okhttp3.Request;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,10 +46,23 @@ public class MainActivity extends AppCompatActivity {
     public static String online_clue = null;
     public LocationClient mLocationClient;
 
+    //witchcraft 数据
+    private float homeX;
+    private float homeY;
+
+    private float lastX;
+    private float lastY;
+
+    private boolean dragable;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //TODO 更换Fragment
+        replaceFragment(new MomentsNearbyFragment());
 
         SharedPreferences appHandbook =
                 getSharedPreferences(AppLocalDataDir.APP_SHARED_PREFERENCE_NAME, MODE_PRIVATE);
@@ -65,10 +75,9 @@ public class MainActivity extends AppCompatActivity {
         //TODO 使用　LBS SDK 获取位置
         //TODO 使用 OkHttp 用位置坐标向服务器
 
-        // TODO 1.查询本地网络是否可用 2.online_clue是否不为空  后h'f
-        // 台创建接受消息请求
+        // TODO 1.查询本地网络是否可用 2.online_clue是否不为空  后台创建接受消息请求
         /***************************************************************************************
-        服务器端
+         服务器端
          //TODO 查询Redis 并比较客户端参数的登录标识 判断用户是否是登录装状态
          //TODO 情况有 1 客户端标识空缺，2 Redis null（因为超时）, 3 客户端与Redis不匹配
 
@@ -81,29 +90,167 @@ public class MainActivity extends AppCompatActivity {
 
          //TODO 如果最终用户处于登录状态返回给客户端，附近的人的状态，以及已经登录标识online = 1
          //TODO 如果 最终判断用户不需要登录，返回附近的人状态，以及online = 0
-        ****************************************************************************************/
+         ****************************************************************************************/
 
         //TODO 就收服务端响应，刷新online, 展示MomentRecords
         /*MellooSQLiteOpenHelper dbHelper = new MellooSQLiteOpenHelper(this,
                 "melloo.db", null, 1);*/
 
         outfitToolbar();
-        outfitMomentsNearbyView();
 
-        //TODO 给三个　发布　按钮绑定事件
-        add876t7
-        FloatingActionButton addTextMoment = findViewById(R.id.add_text_moment);
-        addTextMoment.setOnClickListener(new View.OnClickListener() {
+        //TODO 给右侧两个按钮绑定事件
+        FloatingActionButton momentsNearbyLink = findViewById(R.id.moments_nearby_link_button);
+        FloatingActionButton momentsMineLink = findViewById(R.id.moments_mine_link_button);
+        momentsNearbyLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                replaceFragment(new MomentsNearbyFragment());
+            }
+        });
+        momentsMineLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                replaceFragment(new MomentsMineFragment());
+            }
+        });
 
-        });
-        addTextMoment.setOnHoverListener(new View.OnHoverListener() {
-            //显示　按钮功能和使用方式
-        });
-        addTextMoment.setOnLongClickListener(new View.OnLongClickListener() {
+        View witchcraft = findViewById(R.id.witchcraft);
+        homeX = witchcraft.getX();
+        homeY = witchcraft.getY();
+        witchcraft.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                int action = motionEvent.getAction();
+                float rawX = motionEvent.getRawX();
+                float rawY = motionEvent.getRawY();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        lastX = rawX;
+                        lastY = rawY;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = rawX - lastX;
+                        float dy = rawY - lastY;
+                        float x = view.getX();
+                        float y = view.getY();
 
+                        view.setX(x);
+                        view.setY(y);
+
+                        lastX = rawX;
+                        lastY = rawY;
+                        break;
+                    case MotionEvent.ACTION_UP:
+
+                        float wcTransferX = rawX - homeX;
+                        float wcTransferY = rawY - homeY;
+                        if (wcTransferY > 100 && Math.abs(wcTransferX) < 10) {
+
+                            //TODO 显示编辑一条moment
+
+                        } else if (wcTransferX < -100 && Math.abs(wcTransferY) < 10) {
+
+                            //TODO 显示拍摄一条moment
+
+                        } else if (wcTransferX > 100 && Math.abs(wcTransferY) < 10) {
+
+                            //TODO 显示录制一条moment
+
+                        } else {
+                            // do nothing
+                        }
+                        view.setX(homeX);
+                        view.setY(homeY);
+                        break;
+                }
+                return false;
+            }
         });
+
+
+        Button pickPics = findViewById(R.id.pick_picture);
+        pickPics.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.
+                        PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                } else {
+                    openAlbum();
+                }
+            }
+        });
+
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+
+            case PICK_PICTURE:
+                if (resultCode == RESULT_OK) {
+                    handleImageOnKitKat(data);
+                }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void handleImageOnKitKat(Intent data) {
+
+        String imagePath = null;
+        Uri uri = data.getData();
+        if (DocumentsContract.isDocumentUri(this, uri)) {
+            String docId = DocumentsContract.getDocumentId(uri);
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse(
+                        "content://downloads/public_downloads"), Long.valueOf(docId));
+                imagePath = getImagePath(contentUri, null);
+            }
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            imagePath = getImagePath(uri, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            imagePath = uri.getPath();
+        }
+
+        displayImage(imagePath);
+    }
+    public static final int PICK_PICTURE = 2;
+
+    private void openAlbum() {
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_PICTURE);
+    }
+
+    private String getImagePath(Uri uri, String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver()
+                .query(uri, null, selection, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+            }
+            cursor.close();
+        }
+
+        return path;
+    }
+
+
+    private void displayImage(String imagePath) {
+        if (imagePath != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+        } else {
+
+        }
+    }
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
         return true;
@@ -160,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else {
-                    Toast.makeText(this, "Unknow Error",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Unknow Error", Toast.LENGTH_SHORT).show();
                     finish();
                 }
                 break;
@@ -168,86 +315,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private UserLocation requestSyncLocation() {
-        final BDLocation location = mLocationClient.getLastKnownLocation();
-        UserLocation userLocation = new UserLocation();
-        userLocation.setLongitude(location.getLongitude());
-        userLocation.setLatitude(location.getLatitude());
-        location.getCountryCode();
-        location.getCityCode();
-        return userLocation;
-    }
-
-    private List<MomentsAccountBinding> requestMomentsNearby(UserLocation userLocation) {
-        String url = ResourcePath.NetworkResourcePath.PATH_BASE
-                + ResourcePath.NetworkResourcePath.MOMENTS_NEARBY;
-        HashMap<String, String> extendHeaders = new HashMap<>();
-        extendHeaders.put(HttpAttributeName.Extend.ONLINE_CLUE, online_clue);
-        Request request = HttpOperator.buildJsonEncodePostRequest(extendHeaders, url, userLocation);
-        String respBodyText = HttpOperator.sendRequest(request);
-        ObjectMapper mapper = JsonOperator.getMapper();
-        StandardFeedback<List<MomentsAccountBinding>> feedback;
-        try {
-            feedback = mapper.readValue(respBodyText,
-                    new TypeReference<StandardFeedback<List<MomentsAccountBinding>>>() {
-                    });
-        } catch (IOException e) {
-            Log.d(LogTag.DATA_PROCESS, "", new DataProcessingException());
-            return null;
-        }
-        if(feedback.getStatusCode().equals(2000)) {
-            List<MomentsAccountBinding> moments = feedback.getData();
-            return moments;
-        } else {
-            return null;
-        }
-    }
-
-    private void renderMomentsNearby(List<MomentsAccountBinding> ms) {
-        MomentsAccountBinding bindingT = new MomentsAccountBinding();
-        bindingT.setAccountId(1001L);
-        ArrayList<MomentRecord> momentsT = new ArrayList<>(1);
-        MomentRecord momentT = new MomentRecord();
-        momentT.setId(1234L);
-        momentT.setContentType(1);
-        ArrayList<String> tape = new ArrayList<>();
-        tape.add("abcdefghijklmn");
-        momentT.setTape(tape);
-        momentsT.add(momentT);
-        bindingT.setMoments(momentsT);
-
-        MomentsAccountBinding bindingI = new MomentsAccountBinding();
-        bindingI.setAccountId(1002L);
-        ArrayList<MomentRecord> momentsI = new ArrayList<>(2);
-        MomentRecord momentIa = new MomentRecord();
-        MomentRecord momentIb = new MomentRecord();
-        momentIa.setId(1235L);
-        momentIa.setContentType(2);
-        momentIb.setId(1236L);
-        momentIb.setContentType(2);
-        //momentI.setContentRef("abcdefghijklmn");
-        momentsI.add(momentIa);
-        momentsI.add(momentIb);
-        bindingI.setMoments(momentsI);
-
-        List<MomentsAccountBinding> bindingList = new ArrayList<>(2);
-
-        bindingList.add(bindingT);
-        bindingList.add(bindingI);
-
-        RecyclerView momentsNearbyView = (RecyclerView) findViewById(R.id.moments_nearby);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        momentsNearbyView.setLayoutManager(layoutManager);
-        MomentsAccountBindingListAdapter momentsAccountBindingAdapter =
-                new MomentsAccountBindingListAdapter(bindingList);
-        momentsNearbyView.setAdapter(momentsAccountBindingAdapter);
-    }
-
-    private void outfitMomentsNearbyView() {
-        UserLocation location = requestSyncLocation();
-        List<MomentsAccountBinding> momentsAccountBindings = requestMomentsNearby(location);
-        renderMomentsNearby(momentsAccountBindings);
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.moments_layout, fragment);
+        return;
     }
 
     private void outfitToolbar() {
